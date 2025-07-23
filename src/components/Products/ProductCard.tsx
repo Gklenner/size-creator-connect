@@ -129,7 +129,6 @@ export function ProductCard({ product, userType, affiliateId }: ProductCardProps
               </Button>
               
               <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" size="sm">
                 <Button variant="outline" size="sm" onClick={() => toast({ title: "Em breve", description: "Materiais em desenvolvimento" })}>
                   <Download className="w-4 h-4 mr-1" />
                   Materiais
