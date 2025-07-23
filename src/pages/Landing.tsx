@@ -157,7 +157,7 @@ export default function Landing() {
               Materiais prontos, analytics avançado e IA para maximizar suas conversões.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-gradient-primary text-lg px-8 py-3">
+              <Button size="lg" className="bg-gradient-primary text-lg px-8 py-3" onClick={() => window.location.href = "/register"}>
                 Começar Gratuitamente
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
