@@ -1,11 +1,31 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import Landing from "./Landing";
+import Dashboard from "./Dashboard";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
+  // Simulação de estado de autenticação - será substituído pelo Supabase Auth
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
+
+  // Para demonstração, permitir alternar entre Landing e Dashboard
+  if (showDashboard || isAuthenticated) {
+    return <Dashboard />;
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div>
+      <Landing />
+      
+      {/* Debug controls - remover em produção */}
+      <div className="fixed bottom-4 right-4 space-y-2 z-50">
+        <Button 
+          onClick={() => setShowDashboard(true)}
+          className="bg-gradient-primary shadow-glow"
+          size="sm"
+        >
+          Ver Dashboard (Demo)
+        </Button>
       </div>
     </div>
   );
