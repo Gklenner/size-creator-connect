@@ -16,7 +16,14 @@ import Analytics from "./pages/Analytics/Analytics";
 import Materials from "./pages/Materials/Materials";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 // Loading component
 const LoadingSpinner = () => (

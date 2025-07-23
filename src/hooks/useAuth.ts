@@ -38,10 +38,12 @@ export const useAuthState = () => {
         // Verificar localStorage por agora
         const savedUser = localStorage.getItem('size_user');
         if (savedUser) {
-          setUser(JSON.parse(savedUser));
+          const parsedUser = JSON.parse(savedUser);
+          setUser(parsedUser);
         }
       } catch (error) {
         console.error('Error checking auth:', error);
+        localStorage.removeItem('size_user');
       } finally {
         setIsLoading(false);
       }
