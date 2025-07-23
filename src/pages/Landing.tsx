@@ -343,7 +343,6 @@ export default function Landing() {
           <p className="text-xl mb-8 opacity-90">
             Junte-se a milhares de produtores e afiliados que já estão lucrando com a Size
           </p>
-          <Button size="lg" className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-3">
           <Button 
             size="lg" 
             className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-3"
