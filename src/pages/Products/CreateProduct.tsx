@@ -115,14 +115,15 @@ export default function CreateProduct() {
 
       toast({
         title: "Produto criado com sucesso!",
-        description: "Seu produto já está disponível para afiliados.",
+        description: `${title} foi criado e está ativo para afiliados.`,
       });
       
       navigate("/dashboard");
     } catch (error) {
+      console.error('Error creating product:', error);
       toast({
         title: "Erro ao criar produto",
-        description: "Tente novamente mais tarde.",
+        description: "Verifique os dados e tente novamente.",
         variant: "destructive",
       });
     } finally {

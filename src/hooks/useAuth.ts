@@ -1,5 +1,6 @@
 import { useState, useEffect, createContext, useContext } from "react";
 import { User } from "@/types";
+import { toast } from "@/hooks/use-toast";
 
 // Auth Context Type
 interface AuthContextType {
@@ -52,17 +53,31 @@ export const useAuthState = () => {
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Mock login - substituir por Supabase auth
-      const mockUser: User = {
-        uid: Math.random().toString(36).substr(2, 9),
-        name: email.split('@')[0],
-        email,
-        type: "affiliate", // Default
-        createdAt: new Date(),
-      };
+      // Validação básica
+      if (!email || !password) {
+        throw new Error('Email e senha são obrigatórios');
+      }
+
+      // Simular delay de rede
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Verificar se usuário já existe
+      const existingUsers = JSON.parse(localStorage.getItem('size_users') || '[]');
+      const existingUser = existingUsers.find((u: User) => u.email === email);
       
-      setUser(mockUser);
-      localStorage.setItem('size_user', JSON.stringify(mockUser));
+      if (!existingUser) {
+        throw new Error('Usuário não encontrado. Faça seu cadastro primeiro.');
+      }
+
+      // Verificar senha (mock - em produção usar hash)
+      const savedPassword = localStorage.getItem(`size_password_${existingUser.uid}`);
+      if (savedPassword !== password) {
+        throw new Error('Senha incorreta');
+      }
+      
+      setUser(existingUser);
+      localStorage.setItem('size_user', JSON.stringify(existingUser));
+      localStorage.setItem('size_last_login', new Date().toISOString());
     } catch (error) {
       console.error('Login error:', error);
       throw error;
@@ -74,7 +89,24 @@ export const useAuthState = () => {
   const register = async (name: string, email: string, password: string, type: "affiliate" | "creator") => {
     setIsLoading(true);
     try {
-      // Mock register - substituir por Supabase auth
+      // Validações
+      if (!name || !email || !password) {
+        throw new Error('Todos os campos são obrigatórios');
+      }
+
+      if (password.length < 6) {
+        throw new Error('A senha deve ter pelo menos 6 caracteres');
+      }
+
+      // Verificar se email já existe
+      const existingUsers = JSON.parse(localStorage.getItem('size_users') || '[]');
+      if (existingUsers.find((u: User) => u.email === email)) {
+        throw new Error('Este email já está cadastrado');
+      }
+
+      // Simular delay de rede
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
       const mockUser: User = {
         uid: Math.random().toString(36).substr(2, 9),
         name,
@@ -82,6 +114,11 @@ export const useAuthState = () => {
         type,
         createdAt: new Date(),
       };
+      
+      // Salvar usuário na lista
+      existingUsers.push(mockUser);
+      localStorage.setItem('size_users', JSON.stringify(existingUsers));
+      localStorage.setItem(`size_password_${mockUser.uid}`, password);
       
       setUser(mockUser);
       localStorage.setItem('size_user', JSON.stringify(mockUser));
@@ -96,6 +133,10 @@ export const useAuthState = () => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('size_user');
+    toast({
+      title: "Logout realizado",
+      description: "Você foi desconectado com sucesso.",
+    });
   };
 
   const updateProfile = async (data: Partial<User>) => {
@@ -104,6 +145,13 @@ export const useAuthState = () => {
     const updatedUser = { ...user, ...data };
     setUser(updatedUser);
     localStorage.setItem('size_user', JSON.stringify(updatedUser));
+    
+    // Atualizar na lista de usuários também
+    const existingUsers = JSON.parse(localStorage.getItem('size_users') || '[]');
+    const updatedUsers = existingUsers.map((u: User) => 
+      u.uid === user.uid ? updatedUser : u
+    );
+    localStorage.setItem('size_users', JSON.stringify(updatedUsers));
   };
 
   return {

@@ -50,13 +50,14 @@ export default function Register() {
       await register(name, email, password, userType);
       toast({
         title: "Conta criada com sucesso!",
-        description: `Bem-vindo à Size Platform como ${userType === "creator" ? "Produtor" : "Afiliado"}!`,
+        description: `Bem-vindo, ${name}! Sua conta ${userType === "creator" ? "de Produtor" : "de Afiliado"} foi criada.`,
       });
       navigate("/dashboard");
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
       toast({
         title: "Erro no cadastro",
-        description: "Tente novamente mais tarde.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

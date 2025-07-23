@@ -1,12 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Avatar, Avatar as AvatarComponent, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Link, useNavigate } from "react-router-dom";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, Settings, BarChart3 } from "lucide-react";
+import { User, LogOut, Settings, BarChart3, Package, Palette } from "lucide-react";
 
 interface HeaderProps {
   user?: {
@@ -19,6 +20,8 @@ interface HeaderProps {
 }
 
 export function Header({ user, onSignOut }: HeaderProps) {
+  const navigate = useNavigate();
+
   return (
     <header className="bg-background border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -26,18 +29,30 @@ export function Header({ user, onSignOut }: HeaderProps) {
           {/* Logo */}
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-                Size
-              </h1>
+              <Link to="/">
+                <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent hover:opacity-80 transition-opacity">
+                  Size
+                </h1>
+              </Link>
             </div>
           </div>
 
           {/* Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <Button variant="ghost">Dashboard</Button>
-            <Button variant="ghost">Produtos</Button>
-            <Button variant="ghost">Estatísticas</Button>
-            <Button variant="ghost">Materiais</Button>
+            <Link to="/dashboard">
+              <Button variant="ghost">Dashboard</Button>
+            </Link>
+            {user?.type === "creator" && (
+              <Link to="/products/create">
+                <Button variant="ghost">Produtos</Button>
+              </Link>
+            )}
+            <Link to="/analytics">
+              <Button variant="ghost">Estatísticas</Button>
+            </Link>
+            <Link to="/materials">
+              <Button variant="ghost">Materiais</Button>
+            </Link>
           </nav>
 
           {/* User Menu */}
@@ -64,17 +79,27 @@ export function Header({ user, onSignOut }: HeaderProps) {
                       </span>
                     </div>
                   </div>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
                     <User className="mr-2 h-4 w-4" />
-                    Perfil
+                    Dashboard
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/analytics')}>
                     <BarChart3 className="mr-2 h-4 w-4" />
-                    Estatísticas
+                    Analytics
+                  </DropdownMenuItem>
+                  {user.type === "creator" && (
+                    <DropdownMenuItem onClick={() => navigate('/products/create')}>
+                      <Package className="mr-2 h-4 w-4" />
+                      Produtos
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem onClick={() => navigate('/materials')}>
+                    <Palette className="mr-2 h-4 w-4" />
+                    Materiais
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Settings className="mr-2 h-4 w-4" />
-                    Configurações
+                    Perfil
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={onSignOut}>
                     <LogOut className="mr-2 h-4 w-4" />
@@ -84,8 +109,12 @@ export function Header({ user, onSignOut }: HeaderProps) {
               </DropdownMenu>
             ) : (
               <div className="flex items-center space-x-2">
-                <Button variant="ghost">Entrar</Button>
-                <Button>Cadastrar</Button>
+                <Link to="/login">
+                  <Button variant="ghost">Entrar</Button>
+                </Link>
+                <Link to="/register">
+                  <Button>Cadastrar</Button>
+                </Link>
               </div>
             )}
           </div>

@@ -26,9 +26,18 @@ export function ProductCard({ product, userType, affiliateId }: ProductCardProps
   const copyAffiliateLink = async () => {
     try {
       await navigator.clipboard.writeText(affiliateLink);
+      
+      // Simular clique no produto
+      const updatedProduct = { ...product, clickCount: product.clickCount + 1 };
+      const existingProducts = JSON.parse(localStorage.getItem('size_products') || '[]');
+      const updatedProducts = existingProducts.map((p: Product) => 
+        p.id === product.id ? updatedProduct : p
+      );
+      localStorage.setItem('size_products', JSON.stringify(updatedProducts));
+      
       toast({
         title: "Link copiado!",
-        description: "O link de afiliado foi copiado para sua área de transferência.",
+        description: "Link copiado! Clique registrado no sistema.",
       });
     } catch (error) {
       toast({
@@ -37,6 +46,18 @@ export function ProductCard({ product, userType, affiliateId }: ProductCardProps
         variant: "destructive",
       });
     }
+  };
+
+  const handlePreview = () => {
+    window.open(product.affiliateLink, '_blank');
+    
+    // Registrar visualização
+    const updatedProduct = { ...product, clickCount: product.clickCount + 1 };
+    const existingProducts = JSON.parse(localStorage.getItem('size_products') || '[]');
+    const updatedProducts = existingProducts.map((p: Product) => 
+      p.id === product.id ? updatedProduct : p
+    );
+    localStorage.setItem('size_products', JSON.stringify(updatedProducts));
   };
 
   const conversionRate = product.clickCount > 0 
@@ -109,10 +130,11 @@ export function ProductCard({ product, userType, affiliateId }: ProductCardProps
               
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => toast({ title: "Em breve", description: "Materiais em desenvolvimento" })}>
                   <Download className="w-4 h-4 mr-1" />
                   Materiais
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={handlePreview}>
                   <Eye className="w-4 h-4 mr-1" />
                   Preview
                 </Button>
@@ -122,11 +144,11 @@ export function ProductCard({ product, userType, affiliateId }: ProductCardProps
           
           {userType === "creator" && (
             <div className="grid grid-cols-2 gap-2">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={() => window.location.href = '/analytics'}>
                 <TrendingUp className="w-4 h-4 mr-1" />
                 Analytics
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" onClick={copyAffiliateLink}>
                 <Share2 className="w-4 h-4 mr-1" />
                 Compartilhar
               </Button>

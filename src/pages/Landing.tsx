@@ -130,8 +130,12 @@ export default function Landing() {
               </a>
             </nav>
             <div className="flex items-center space-x-4">
-              <Button variant="ghost">Entrar</Button>
-              <Button className="bg-gradient-primary">Cadastrar</Button>
+              <Button variant="ghost" onClick={() => window.location.href = '/login'}>
+                Entrar
+              </Button>
+              <Button className="bg-gradient-primary" onClick={() => window.location.href = '/register'}>
+                Cadastrar
+              </Button>
             </div>
           </div>
         </div>
@@ -157,11 +161,20 @@ export default function Landing() {
               Materiais prontos, analytics avançado e IA para maximizar suas conversões.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-gradient-primary text-lg px-8 py-3" onClick={() => window.location.href = "/register"}>
+              <Button 
+                size="lg" 
+                className="bg-gradient-primary text-lg px-8 py-3" 
+                onClick={() => window.location.href = "/register"}
+              >
                 Começar Gratuitamente
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
-              <Button size="lg" variant="outline" className="text-lg px-8 py-3">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="text-lg px-8 py-3"
+                onClick={() => window.location.href = "/login"}
+              >
                 Ver Demo
               </Button>
             </div>
@@ -310,6 +323,7 @@ export default function Landing() {
                   <Button 
                     className={`w-full mt-6 ${plan.popular ? 'bg-gradient-primary' : ''}`}
                     variant={plan.popular ? "default" : "outline"}
+                    onClick={() => window.location.href = "/register"}
                   >
                     {plan.cta}
                   </Button>
@@ -330,6 +344,11 @@ export default function Landing() {
             Junte-se a milhares de produtores e afiliados que já estão lucrando com a Size
           </p>
           <Button size="lg" className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-3">
+          <Button 
+            size="lg" 
+            className="bg-white text-primary hover:bg-white/90 text-lg px-8 py-3"
+            onClick={() => window.location.href = "/register"}
+          >
             Começar Agora - Grátis
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>

@@ -26,13 +26,14 @@ export default function Login() {
       await login(email, password);
       toast({
         title: "Login realizado com sucesso!",
-        description: "Bem-vindo de volta à Size Platform.",
+        description: `Bem-vindo de volta, ${email.split('@')[0]}!`,
       });
       navigate("/dashboard");
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
       toast({
         title: "Erro no login",
-        description: "Verifique suas credenciais e tente novamente.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
