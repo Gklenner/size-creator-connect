@@ -23,7 +23,7 @@ export default function Login() {
     setIsLoading(true);
 
     try {
-      await login(email, password);
+      await login({ email, password });
       toast({
         title: "Login realizado com sucesso!",
         description: `Bem-vindo de volta, ${email.split('@')[0]}!`,

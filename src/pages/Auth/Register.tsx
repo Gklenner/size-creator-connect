@@ -19,7 +19,7 @@ export default function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
-  const { register } = useAuth();
+  const { register: registerUser } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -47,7 +47,7 @@ export default function Register() {
     setIsLoading(true);
 
     try {
-      await register(name, email, password, userType);
+      await registerUser({ name, email, password, confirmPassword: password, type: userType });
       toast({
         title: "Conta criada com sucesso!",
         description: `Bem-vindo, ${name}! Sua conta ${userType === "creator" ? "de Produtor" : "de Afiliado"} foi criada.`,

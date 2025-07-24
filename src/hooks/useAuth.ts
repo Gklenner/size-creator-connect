@@ -1,170 +1,197 @@
-import { useState, useEffect, createContext, useContext } from "react";
+import { useCallback } from "react";
+import { useStore } from "@/store/useStore";
 import { User } from "@/types";
-import { toast } from "@/hooks/use-toast";
+import { LoginFormData, RegisterFormData } from "@/lib/validations";
 
-// Auth Context Type
-interface AuthContextType {
-  user: User | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, type: "affiliate" | "creator") => Promise<void>;
-  logout: () => void;
-  updateProfile: (data: Partial<User>) => Promise<void>;
-}
+// Mock database simulation
+const USERS_KEY = 'size_users';
+const USER_KEY = 'size_user';
 
-// Create Auth Context
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Auth Hook
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+  const { 
+    user, 
+    isAuthenticated, 
+    isLoading, 
+    setUser, 
+    setLoading, 
+    logout: storeLogout,
+    addNotification 
+  } = useStore();
 
-// Mock Auth Functions (será substituído pelo Supabase)
-export const useAuthState = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Simulação de verificação de auth
-  useEffect(() => {
-    const checkAuth = async () => {
-      setIsLoading(true);
-      try {
-        // Verificar localStorage por agora
-        const savedUser = localStorage.getItem('size_user');
-        if (savedUser) {
-          const parsedUser = JSON.parse(savedUser);
-          setUser(parsedUser);
-        }
-      } catch (error) {
-        console.error('Error checking auth:', error);
-        localStorage.removeItem('size_user');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkAuth();
-  }, []);
-
-  const login = async (email: string, password: string) => {
-    setIsLoading(true);
+  const login = useCallback(async (data: LoginFormData): Promise<void> => {
+    setLoading(true);
+    
     try {
-      // Validação básica
-      if (!email || !password) {
-        throw new Error('Email e senha são obrigatórios');
-      }
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1200));
 
-      // Simular delay de rede
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Verificar se usuário já existe
-      const existingUsers = JSON.parse(localStorage.getItem('size_users') || '[]');
-      const existingUser = existingUsers.find((u: User) => u.email === email);
+      // Get existing users
+      const existingUsers: User[] = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+      const existingUser = existingUsers.find(u => u.email === data.email);
       
       if (!existingUser) {
         throw new Error('Usuário não encontrado. Faça seu cadastro primeiro.');
       }
 
-      // Verificar senha (mock - em produção usar hash)
+      // Check password (in production, this would be hashed)
       const savedPassword = localStorage.getItem(`size_password_${existingUser.uid}`);
-      if (savedPassword !== password) {
+      if (savedPassword !== data.password) {
         throw new Error('Senha incorreta');
       }
       
-      setUser(existingUser);
-      localStorage.setItem('size_user', JSON.stringify(existingUser));
+      // Update last login
+      const updatedUser = {
+        ...existingUser,
+        lastLogin: new Date(),
+      };
+      
+      setUser(updatedUser);
+      localStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
       localStorage.setItem('size_last_login', new Date().toISOString());
+      
+      addNotification({
+        type: 'success',
+        message: `Bem-vindo de volta, ${updatedUser.name}!`
+      });
     } catch (error) {
-      console.error('Login error:', error);
+      const message = error instanceof Error ? error.message : 'Erro desconhecido no login';
+      addNotification({
+        type: 'error',
+        message
+      });
       throw error;
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  };
+  }, [setUser, setLoading, addNotification]);
 
-  const register = async (name: string, email: string, password: string, type: "affiliate" | "creator") => {
-    setIsLoading(true);
+  const register = useCallback(async (data: RegisterFormData): Promise<void> => {
+    setLoading(true);
+    
     try {
-      // Validações
-      if (!name || !email || !password) {
-        throw new Error('Todos os campos são obrigatórios');
-      }
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-      if (password.length < 6) {
-        throw new Error('A senha deve ter pelo menos 6 caracteres');
-      }
-
-      // Verificar se email já existe
-      const existingUsers = JSON.parse(localStorage.getItem('size_users') || '[]');
-      if (existingUsers.find((u: User) => u.email === email)) {
+      // Get existing users
+      const existingUsers: User[] = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+      
+      // Check if email already exists
+      if (existingUsers.find(u => u.email === data.email)) {
         throw new Error('Este email já está cadastrado');
       }
 
-      // Simular delay de rede
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
-      const mockUser: User = {
-        uid: Math.random().toString(36).substr(2, 9),
-        name,
-        email,
-        type,
+      // Create new user
+      const newUser: User = {
+        uid: `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        name: data.name,
+        email: data.email,
+        type: data.type,
         createdAt: new Date(),
+        avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(data.name)}`,
+        bio: data.type === 'creator' 
+          ? 'Criador de produtos digitais' 
+          : 'Afiliado especializado em marketing digital',
       };
       
-      // Salvar usuário na lista
-      existingUsers.push(mockUser);
-      localStorage.setItem('size_users', JSON.stringify(existingUsers));
-      localStorage.setItem(`size_password_${mockUser.uid}`, password);
+      // Save user
+      existingUsers.push(newUser);
+      localStorage.setItem(USERS_KEY, JSON.stringify(existingUsers));
+      localStorage.setItem(`size_password_${newUser.uid}`, data.password);
       
-      setUser(mockUser);
-      localStorage.setItem('size_user', JSON.stringify(mockUser));
+      setUser(newUser);
+      localStorage.setItem(USER_KEY, JSON.stringify(newUser));
+      
+      addNotification({
+        type: 'success',
+        message: `Conta criada com sucesso! Bem-vindo, ${newUser.name}!`
+      });
     } catch (error) {
-      console.error('Register error:', error);
+      const message = error instanceof Error ? error.message : 'Erro desconhecido no cadastro';
+      addNotification({
+        type: 'error',
+        message
+      });
       throw error;
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  };
+  }, [setUser, setLoading, addNotification]);
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('size_user');
-    toast({
-      title: "Logout realizado",
-      description: "Você foi desconectado com sucesso.",
+  const logout = useCallback(() => {
+    storeLogout();
+    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem('size_last_login');
+    
+    addNotification({
+      type: 'success',
+      message: 'Logout realizado com sucesso'
     });
-  };
+  }, [storeLogout, addNotification]);
 
-  const updateProfile = async (data: Partial<User>) => {
+  const updateProfile = useCallback(async (updates: Partial<User>): Promise<void> => {
     if (!user) return;
     
-    const updatedUser = { ...user, ...data };
-    setUser(updatedUser);
-    localStorage.setItem('size_user', JSON.stringify(updatedUser));
+    setLoading(true);
     
-    // Atualizar na lista de usuários também
-    const existingUsers = JSON.parse(localStorage.getItem('size_users') || '[]');
-    const updatedUsers = existingUsers.map((u: User) => 
-      u.uid === user.uid ? updatedUser : u
-    );
-    localStorage.setItem('size_users', JSON.stringify(updatedUsers));
-  };
+    try {
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      const updatedUser = { ...user, ...updates };
+      
+      // Update in users list
+      const existingUsers: User[] = JSON.parse(localStorage.getItem(USERS_KEY) || '[]');
+      const updatedUsers = existingUsers.map(u => 
+        u.uid === user.uid ? updatedUser : u
+      );
+      
+      localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
+      localStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
+      
+      setUser(updatedUser);
+      
+      addNotification({
+        type: 'success',
+        message: 'Perfil atualizado com sucesso!'
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Erro ao atualizar perfil';
+      addNotification({
+        type: 'error',
+        message
+      });
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  }, [user, setUser, setLoading, addNotification]);
+
+  const checkAuthStatus = useCallback(async (): Promise<void> => {
+    setLoading(true);
+    
+    try {
+      // Check if user is stored
+      const savedUser = localStorage.getItem(USER_KEY);
+      if (savedUser) {
+        const parsedUser = JSON.parse(savedUser);
+        setUser(parsedUser);
+      }
+    } catch (error) {
+      console.error('Error checking auth status:', error);
+      localStorage.removeItem(USER_KEY);
+    } finally {
+      setLoading(false);
+    }
+  }, [setUser, setLoading]);
 
   return {
     user,
+    isAuthenticated,
     isLoading,
-    isAuthenticated: !!user,
     login,
     register,
     logout,
     updateProfile,
+    checkAuthStatus,
   };
 };
-
-export { AuthContext };
